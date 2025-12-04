@@ -1,10 +1,10 @@
 <?php
-require_once __DIR__ . '/config.php';
-
 class Database {
     private $connection;
     
     public function __construct() {
+        require_once __DIR__ . '/config.php';
+        
         try {
             $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $this->connection = new PDO($dsn, DB_USER, DB_PASSWORD);
@@ -12,9 +12,10 @@ class Database {
             $this->connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             
             $this->createTable();
+            
         } catch(PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            throw new Exception("Error de conexión a la base de datos");
+            error_log("Database connection error: " . $e->getMessage());
+            throw new Exception("Error de conexión a la base de datos. Verifica la configuración.");
         }
     }
     
@@ -26,33 +27,13 @@ class Database {
             telefono VARCHAR(15) NOT NULL,
             fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_folio (folio)
-        )";
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
         
         $this->connection->exec($sql);
     }
     
     public function getConnection() {
         return $this->connection;
-    }
-    
-    public function generateFolio() {
-        $prefix = FOLIO_PREFIX;
-        $random = strtoupper(substr(md5(uniqid()), 0, 6));
-        $folio = $prefix . $random;
-        
-        // Verificar que no exista
-        while ($this->folioExists($folio)) {
-            $random = strtoupper(substr(md5(uniqid()), 0, 6));
-            $folio = $prefix . $random;
-        }
-        
-        return $folio;
-    }
-    
-    private function folioExists($folio) {
-        $stmt = $this->connection->prepare("SELECT COUNT(*) FROM registros WHERE folio = ?");
-        $stmt->execute([$folio]);
-        return $stmt->fetchColumn() > 0;
     }
 }
 ?>

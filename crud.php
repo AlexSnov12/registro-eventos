@@ -1,51 +1,67 @@
 <?php
+// Habilitar errores para desarrollo
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // En producción, los errores van a logs
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Manejar preflight
+// Manejar preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Habilitar errores para desarrollo
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
+// Incluir la conexión a la base de datos
+require_once __DIR__ . '/database.php';
 
-require_once __DIR__ . '/../includes/database.php';
+// Respuesta por defecto
+$response = [
+    'success' => false,
+    'message' => 'Acción no especificada',
+    'data' => null
+];
 
 try {
+    // Obtener la acción
+    $input = $_POST;
+    if (empty($input) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        // Para pruebas GET
+        $input = $_GET;
+    }
+    
+    $action = $input['action'] ?? '';
+    
+    // Crear instancia de base de datos
     $db = new Database();
     $conn = $db->getConnection();
     
-    $action = $_POST['action'] ?? '';
-    
-    $response = ['success' => false, 'message' => 'Acción no válida'];
-    
     switch ($action) {
         case 'create':
-            $nombre = trim($_POST['nombre'] ?? '');
-            $telefono = trim($_POST['telefono'] ?? '');
+            $nombre = trim($input['nombre'] ?? '');
+            $telefono = trim($input['telefono'] ?? '');
             
             if (empty($nombre) || empty($telefono)) {
                 $response['message'] = 'Nombre y teléfono son requeridos';
                 break;
             }
             
+            // Validar teléfono (10 dígitos)
             if (!preg_match('/^\d{10}$/', $telefono)) {
-                $response['message'] = 'Teléfono debe tener 10 dígitos';
+                $response['message'] = 'El teléfono debe tener 10 dígitos';
                 break;
             }
             
-            $folio = $db->generateFolio();
+            // Generar folio único
+            $folio = 'EVT-' . strtoupper(substr(md5(uniqid()), 0, 6));
             
             $stmt = $conn->prepare("INSERT INTO registros (folio, nombre, telefono) VALUES (?, ?, ?)");
             
             if ($stmt->execute([$folio, $nombre, $telefono])) {
                 $response['success'] = true;
-                $response['message'] = 'Registro creado';
+                $response['message'] = 'Registro creado exitosamente';
                 $response['folio'] = $folio;
                 $response['data'] = [
                     'folio' => $folio,
@@ -53,12 +69,12 @@ try {
                     'telefono' => $telefono
                 ];
             } else {
-                $response['message'] = 'Error al crear';
+                $response['message'] = 'Error al crear el registro';
             }
             break;
             
         case 'read':
-            $folio = trim($_POST['folio'] ?? '');
+            $folio = trim($input['folio'] ?? '');
             
             if (empty($folio)) {
                 $response['message'] = 'Folio requerido';
@@ -79,7 +95,7 @@ try {
             break;
             
         case 'list':
-            $stmt = $conn->query("SELECT * FROM registros ORDER BY fecha_registro DESC LIMIT 20");
+            $stmt = $conn->query("SELECT * FROM registros ORDER BY fecha_registro DESC LIMIT 50");
             $registros = $stmt->fetchAll();
             
             $response['success'] = true;
@@ -88,7 +104,7 @@ try {
             break;
             
         case 'delete':
-            $folio = trim($_POST['folio'] ?? '');
+            $folio = trim($input['folio'] ?? '');
             
             if (empty($folio)) {
                 $response['message'] = 'Folio requerido';
@@ -108,12 +124,17 @@ try {
                 $response['message'] = 'Error al eliminar';
             }
             break;
+            
+        default:
+            $response['message'] = 'Acción no válida. Acciones: create, read, list, delete';
+            break;
     }
     
 } catch (Exception $e) {
     $response['message'] = 'Error del servidor: ' . $e->getMessage();
-    error_log("CRUD Error: " . $e->getMessage());
+    error_log("CRUD Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
 }
 
-echo json_encode($response);
+// Enviar respuesta
+echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 ?>

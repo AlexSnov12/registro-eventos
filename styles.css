@@ -97,6 +97,13 @@ input:focus {
     border-color: #4dabf7;
 }
 
+small {
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: block;
+    margin-top: 5px;
+}
+
 .btn {
     padding: 12px 25px;
     border: none;
@@ -198,4 +205,10 @@ footer {
     text-align: center;
     padding: 20px;
     font-size: 0.9rem;
+}
+
+.footer-note {
+    margin-top: 5px;
+    font-size: 0.85rem;
+    opacity: 0.8;
 }

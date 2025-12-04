@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const API_BASE = window.location.origin + '/api/crud.php';
+    // URL de la API - usar ruta relativa
+    const API_BASE = window.location.origin + '/crud.php';
+    console.log('API URL:', API_BASE); // Para debugging
     
     // Referencias a elementos
     const registroForm = document.getElementById('registroForm');
@@ -9,11 +11,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultadoBusqueda = document.getElementById('resultadoBusqueda');
     const listaRegistros = document.getElementById('listaRegistros');
 
+    // Función para mostrar mensajes
+    function mostrarMensaje(elemento, tipo, mensaje) {
+        elemento.innerHTML = mensaje;
+        elemento.className = 'alert ' + tipo;
+        elemento.style.display = 'block';
+        
+        // Ocultar después de 5 segundos
+        setTimeout(() => {
+            elemento.style.display = 'none';
+        }, 5000);
+    }
+
     // Registrar nuevo
     registroForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        const nombre = document.getElementById('nombre').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        
+        if (!nombre || !telefono) {
+            mostrarMensaje(resultadoRegistro, 'error', '❌ Nombre y teléfono son requeridos');
+            return;
+        }
+        
+        if (!/^\d{10}$/.test(telefono)) {
+            mostrarMensaje(resultadoRegistro, 'error', '❌ El teléfono debe tener 10 dígitos');
+            return;
+        }
         
         try {
             const response = await fetch(API_BASE, {
@@ -21,28 +46,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams(formData).toString()
+                body: `action=create&nombre=${encodeURIComponent(nombre)}&telefono=${telefono}`
             });
             
             const data = await response.json();
+            console.log('Create response:', data); // Para debugging
             
             if (data.success) {
-                mostrarResultado(resultadoRegistro, 'success', 
-                    `✅ Registro exitoso!<br>Tu folio: <strong>${data.folio}</strong>`);
+                mostrarMensaje(resultadoRegistro, 'success', 
+                    `✅ Registro exitoso!<br><strong>Tu folio: ${data.folio}</strong><br>Guárdalo para gestionar tu registro.`);
                 registroForm.reset();
                 cargarRegistros();
             } else {
-                mostrarResultado(resultadoRegistro, 'error', `❌ ${data.message}`);
+                mostrarMensaje(resultadoRegistro, 'error', `❌ Error: ${data.message}`);
             }
         } catch (error) {
-            mostrarResultado(resultadoRegistro, 'error', '❌ Error de conexión');
+            console.error('Fetch error:', error);
+            mostrarMensaje(resultadoRegistro, 'error', '❌ Error de conexión con el servidor');
         }
     });
 
     // Buscar registro
     buscarForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const formData = new FormData(this);
+        const folio = document.getElementById('folioBuscar').value.trim();
+        
+        if (!folio) {
+            mostrarMensaje(resultadoBusqueda, 'error', '❌ Ingresa un folio');
+            return;
+        }
         
         try {
             const response = await fetch(API_BASE, {
@@ -50,48 +82,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({
-                    action: 'read',
-                    folio: formData.get('folio')
-                }).toString()
+                body: `action=read&folio=${encodeURIComponent(folio)}`
             });
             
             const data = await response.json();
+            console.log('Read response:', data);
             
             if (data.success) {
                 const reg = data.data;
-                mostrarResultado(resultadoBusqueda, 'success',
+                mostrarMensaje(resultadoBusqueda, 'success',
                     `✅ <strong>Registro encontrado:</strong><br>
-                     Folio: ${reg.folio}<br>
-                     Nombre: ${reg.nombre}<br>
-                     Teléfono: ${reg.telefono}<br>
-                     Fecha: ${reg.fecha_registro}`);
+                     <strong>Folio:</strong> ${reg.folio}<br>
+                     <strong>Nombre:</strong> ${reg.nombre}<br>
+                     <strong>Teléfono:</strong> ${reg.telefono}<br>
+                     <strong>Fecha:</strong> ${reg.fecha_registro}`);
             } else {
-                mostrarResultado(resultadoBusqueda, 'error', `❌ ${data.message}`);
+                mostrarMensaje(resultadoBusqueda, 'error', `❌ ${data.message}`);
             }
         } catch (error) {
-            mostrarResultado(resultadoBusqueda, 'error', '❌ Error de conexión');
+            console.error('Fetch error:', error);
+            mostrarMensaje(resultadoBusqueda, 'error', '❌ Error de conexión');
         }
     });
 
     // Refrescar lista
     refrescarBtn.addEventListener('click', cargarRegistros);
 
-    // Cargar registros al inicio
-    cargarRegistros();
-
-    // Funciones auxiliares
-    function mostrarResultado(elemento, tipo, mensaje) {
-        elemento.innerHTML = mensaje;
-        elemento.className = 'alert ' + tipo;
-        
-        setTimeout(() => {
-            elemento.style.display = 'none';
-        }, 5000);
-    }
-
+    // Cargar registros
     async function cargarRegistros() {
-        listaRegistros.innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+        listaRegistros.innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando registros...</p>';
         
         try {
             const response = await fetch(API_BASE, {
@@ -103,10 +122,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const data = await response.json();
+            console.log('List response:', data);
             
             if (data.success) {
                 if (data.data.length === 0) {
-                    listaRegistros.innerHTML = '<p class="loading">No hay registros todavía.</p>';
+                    listaRegistros.innerHTML = '<p class="loading">No hay registros todavía. ¡Sé el primero!</p>';
                     return;
                 }
                 
@@ -119,17 +139,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="nombre">${registro.nombre}</div>
                             <div class="telefono">📱 ${registro.telefono}</div>
                         </div>
-                        <div class="fecha">${registro.fecha_registro}</div>
+                        <div class="fecha">${new Date(registro.fecha_registro).toLocaleDateString()}</div>
                     </div>
                     `;
                 });
                 
                 listaRegistros.innerHTML = html;
             } else {
-                listaRegistros.innerHTML = '<p class="loading">❌ Error al cargar</p>';
+                listaRegistros.innerHTML = '<p class="loading">❌ Error al cargar registros</p>';
             }
         } catch (error) {
+            console.error('Fetch error:', error);
             listaRegistros.innerHTML = '<p class="loading">❌ Error de conexión</p>';
         }
     }
+
+    // Cargar registros al inicio
+    cargarRegistros();
 });

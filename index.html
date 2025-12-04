@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro para el Evento</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -15,7 +15,6 @@
         </header>
 
         <main>
-            <!-- Formulario de Registro -->
             <section class="card">
                 <h2><i class="fas fa-user-plus"></i> Nuevo Registro</h2>
                 <form id="registroForm">
@@ -28,7 +27,9 @@
                     <div class="form-group">
                         <label for="telefono"><i class="fas fa-phone"></i> Teléfono *</label>
                         <input type="tel" id="telefono" name="telefono" required 
-                               placeholder="10 dígitos sin espacios">
+                               placeholder="10 dígitos, ej: 5512345678"
+                               pattern="[0-9]{10}">
+                        <small>10 dígitos sin espacios</small>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
@@ -39,7 +40,6 @@
                 <div id="resultadoRegistro" class="alert"></div>
             </section>
 
-            <!-- Gestión de Registros -->
             <section class="card">
                 <h2><i class="fas fa-search"></i> Buscar Registro</h2>
                 <form id="buscarForm">
@@ -55,7 +55,6 @@
                 <div id="resultadoBusqueda" class="alert"></div>
             </section>
 
-            <!-- Lista de Registros -->
             <section class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-list"></i> Registros Recientes</h2>
@@ -64,16 +63,17 @@
                     </button>
                 </div>
                 <div id="listaRegistros">
-                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando registros...</p>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p>Sistema de Registro para Evento | Guarda tu folio</p>
+            <p><i class="fas fa-info-circle"></i> Sistema de Registro para Evento</p>
+            <p class="footer-note">Guarda tu folio para gestionar tu registro después</p>
         </footer>
     </div>
 
-    <script src="/scripts.js"></script>
+    <script src="scripts.js"></script>
 </body>
 </html>

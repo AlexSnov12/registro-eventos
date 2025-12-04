@@ -7,12 +7,6 @@
     "ext-pdo": "*",
     "ext-pdo_mysql": "*"
   },
-  "autoload": {
-    "files": [
-      "includes/config.php",
-      "includes/database.php"
-    ]
-  },
   "config": {
     "platform": {
       "php": "8.2"
