@@ -3,7 +3,7 @@
   "description": "Sistema de registro para eventos",
   "type": "project",
   "require": {
-    "php": "^8.0",
+    "php": "^8.2",
     "ext-pdo": "*",
     "ext-pdo_mysql": "*"
   },
@@ -12,5 +12,11 @@
       "includes/config.php",
       "includes/database.php"
     ]
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    },
+    "optimize-autoloader": true
   }
 }
