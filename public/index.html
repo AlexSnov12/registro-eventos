@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro para el Evento</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calendar-alt"></i> Lista de Registro para el Evento</h1>
+            <p class="subtitle">Registra tu participación y obtén tu folio único</p>
+        </header>
+
+        <main>
+            <!-- Formulario de Registro -->
+            <section class="card">
+                <h2><i class="fas fa-user-plus"></i> Nuevo Registro</h2>
+                <form id="registroForm">
+                    <div class="form-group">
+                        <label for="nombre"><i class="fas fa-user"></i> Nombre Completo *</label>
+                        <input type="text" id="nombre" name="nombre" required 
+                               placeholder="Ej: Juan Pérez García">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefono"><i class="fas fa-phone"></i> Teléfono *</label>
+                        <input type="tel" id="telefono" name="telefono" required 
+                               placeholder="10 dígitos sin espacios">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Registrar
+                    </button>
+                </form>
+                
+                <div id="resultadoRegistro" class="alert"></div>
+            </section>
+
+            <!-- Gestión de Registros -->
+            <section class="card">
+                <h2><i class="fas fa-search"></i> Buscar Registro</h2>
+                <form id="buscarForm">
+                    <div class="form-group">
+                        <label for="folioBuscar"><i class="fas fa-file-alt"></i> Folio</label>
+                        <input type="text" id="folioBuscar" name="folio" required 
+                               placeholder="Ej: EVT-ABC123">
+                    </div>
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </form>
+                <div id="resultadoBusqueda" class="alert"></div>
+            </section>
+
+            <!-- Lista de Registros -->
+            <section class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Registros Recientes</h2>
+                    <button id="refrescarLista" class="btn btn-small">
+                        <i class="fas fa-sync"></i> Refrescar
+                    </button>
+                </div>
+                <div id="listaRegistros">
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Sistema de Registro para Evento | Guarda tu folio</p>
+        </footer>
+    </div>
+
+    <script src="/scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "registro-evento/app",
+  "description": "Sistema de registro para eventos",
+  "type": "project",
+  "require": {
+    "php": "^8.0",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "autoload": {
+    "files": [
+      "includes/config.php",
+      "includes/database.php"
+    ]
+  }
+}
